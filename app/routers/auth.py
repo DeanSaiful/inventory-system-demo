@@ -36,7 +36,7 @@ def login(
 
 
     request.session["user_id"] = user.id
-    return RedirectResponse("/request", status_code=302)
+    return RedirectResponse("/request", status_code=303)
 
 @router.get("/logout")
 def logout(request: Request):
