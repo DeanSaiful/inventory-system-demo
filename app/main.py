@@ -20,7 +20,7 @@ app = FastAPI()
 
 app.add_middleware(
     SessionMiddleware,
-    secret_key="CHANGE_THIS_SECRET"
+    secret_key="super-secret-key"
 )
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
