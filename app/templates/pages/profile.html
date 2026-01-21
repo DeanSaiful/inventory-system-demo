@@ -1,0 +1,150 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+{% if request.session.get("error") %}
+  <div class="mb-4 bg-red-100 text-red-700 px-4 py-2 rounded">
+    {{ request.session.pop("error") }}
+  </div>
+{% endif %}
+
+{% if request.session.get("success") %}
+  <div class="mb-4 bg-green-100 text-green-700 px-4 py-2 rounded">
+    {{ request.session.pop("success") }}
+  </div>
+{% endif %}
+
+<div class="max-w-xl bg-white rounded shadow p-6">
+
+    <h3 class="text-lg font-semibold mb-4 flex items-center justify-between">
+    Account Information
+    <button type="button"
+            onclick="enableEditProfile()"
+            class="text-blue-600 text-sm">
+        ✏️ Edit
+    </button>
+    </h3>
+
+    <form method="post" action="/profile/update" id="profileForm">
+
+    <div class="space-y-3 text-sm mb-4">
+
+        <div>
+        <label class="block text-gray-600 mb-1">Name</label>
+        <input name="name"
+                id="profileName"
+                value="{{ current_user.name }}"
+                readonly
+                class="w-full border rounded px-3 py-2 bg-gray-100">
+        </div>
+
+        <div>
+        <label class="block text-gray-600 mb-1">Employee ID</label>
+        <input name="employee_id"
+                id="profileEmployeeId"
+                value="{{ current_user.employee_id }}"
+                readonly
+                class="w-full border rounded px-3 py-2 bg-gray-100">
+        </div>
+
+        <div>
+        <label class="block text-gray-600 mb-1">Role</label>
+        <input value="{{ current_user.role | capitalize }}"
+                readonly
+                class="w-full border rounded px-3 py-2 bg-gray-100">
+        </div>
+
+    </div>
+
+    <div id="profileActions" class="hidden justify-end gap-2">
+        <button type="button"
+                onclick="cancelEditProfile()"
+                class="px-4 py-2 border rounded">
+        Cancel
+        </button>
+        <button type="submit"
+                class="bg-blue-600 text-white px-4 py-2 rounded">
+        Save
+        </button>
+    </div>
+
+    </form>
+
+
+  <hr class="my-4">
+
+  <h3 class="text-lg font-semibold mb-4">Change Password</h3>
+
+  <form method="post" action="/profile/password" class="space-y-4">
+
+    <div>
+      <label class="block text-sm mb-1">Current Password</label>
+      <input type="password"
+             name="current_password"
+             required
+             class="w-full border rounded px-3 py-2">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">New Password</label>
+      <input type="password"
+             name="new_password"
+             required
+             class="w-full border rounded px-3 py-2">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Confirm New Password</label>
+      <input type="password"
+             name="confirm_password"
+             required
+             class="w-full border rounded px-3 py-2">
+    </div>
+
+    <div class="flex justify-end">
+      <button class="bg-blue-600 text-white px-4 py-2 rounded">
+        Update Password
+      </button>
+    </div>
+
+  </form>
+
+</div>
+
+<script>
+function enableEditProfile() {
+    document.getElementById("profileName").readOnly = false;
+    document.getElementById("profileEmployeeId").readOnly = false;
+
+    document.getElementById("profileName").classList.remove("bg-gray-100");
+    document.getElementById("profileEmployeeId").classList.remove("bg-gray-100");
+
+    document.getElementById("profileActions").classList.remove("hidden");
+
+    const actions = document.getElementById("profileActions");
+    actions.classList.remove("hidden");
+    actions.classList.add("flex");
+}
+
+function cancelEditProfile() {
+    document.getElementById("profileName").value = "{{ current_user.name }}";
+    document.getElementById("profileEmployeeId").value = "{{ current_user.employee_id }}";
+
+    document.getElementById("profileName").readOnly = true;
+    document.getElementById("profileEmployeeId").readOnly = true;
+
+    document.getElementById("profileName").classList.add("bg-gray-100");
+    document.getElementById("profileEmployeeId").classList.add("bg-gray-100");
+
+    document.getElementById("profileActions").classList.add("hidden");
+
+    const actions = document.getElementById("profileActions");
+    actions.classList.add("hidden");
+    actions.classList.remove("flex");
+}
+</script>
+
+
+{% endblock %}

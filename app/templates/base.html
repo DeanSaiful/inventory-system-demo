@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='css/output.css') }}">
+</head>
+<body>
+
+  <div class="min-h-screen flex items-center justify-center bg-gray-100">
+
+  <div class="bg-white w-full max-w-md rounded-lg shadow p-6">
+
+    <h2 class="text-xl font-semibold text-center mb-6">
+      Inventory Login
+    </h2>
+
+    <form method="post" action="/login" class="space-y-4">
+
+      <!-- Employee ID -->
+      <div>
+        <label class="block text-sm mb-1">Employee ID</label>
+        <input type="text"
+               name="employee_id"
+               required
+               class="w-full border rounded px-3 py-2 mb-4">
+      </div>
+
+      <!-- Password -->
+      <div>
+        <label class="block text-sm mb-1">Password</label>
+        <input type="password"
+               name="password"
+               required
+               class="w-full border rounded px-3 py-2 mb-4">
+      </div>
+
+      <!-- 🔴 ERROR MESSAGE (HERE) -->
+      {% if request.session.get("error") %}
+        <div class="bg-red-100 text-red-700 px-4 py-2 rounded text-sm mb-4">
+          {{ request.session.pop("error") }}
+        </div>
+      {% endif %}
+
+      <!-- Login button -->
+      <button type="submit"
+              class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+        Login
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+</body>
+</html>

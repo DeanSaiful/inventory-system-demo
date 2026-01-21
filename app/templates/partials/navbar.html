@@ -1,0 +1,33 @@
+<div class="bg-blue-600 text-white shadow px-6 py-3 flex justify-between items-center">
+
+  <!-- LEFT: Logo + App Name + Page Title -->
+  <div class="flex items-center gap-4">
+    <!-- App name -->
+    <div class="leading-tight">
+      <div class="text-lg font-semibold uppercase tracking-wide">
+        Component Inventory
+      </div>
+      <div class="text-xs text-blue-200">
+        {% block page_title %}{% endblock %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: User info -->
+  <div class="flex items-center gap-4 text-sm">
+
+    <span class="text-blue-100">
+      {{ current_user.name }} ({{ current_user.role }})
+    </span>
+
+    <a href="/logout"
+      class="px-4 font-medium">
+      <span class="material-icons-round transition transform hover:scale-110">
+        logout
+      </span>
+    </a>
+
+  </div>
+
+</div>

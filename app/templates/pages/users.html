@@ -1,0 +1,375 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}User Management{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% set admins = users | selectattr("role", "equalto", "admin") | list %}
+{% set normal_users = users | selectattr("role", "equalto", "user") | list %}
+
+
+{% block content %}
+
+
+<div class="bg-white rounded shadow p-4">
+
+  <!-- HEADER -->
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-semibold">Users</h3>
+
+    <button
+      type="button"
+      onclick="openAddUserModal()"
+      class="bg-blue-600 text-white px-4 py-2 rounded">
+      + Add User
+    </button>
+  </div>
+
+  <!-- ================= ADMIN ACCOUNTS ================= -->
+  <div class="bg-white rounded shadow p-4 mb-6">
+
+    <h3 class="text-lg font-semibold mb-3">Admin Accounts</h3>
+
+    <table class="min-w-full text-sm border-collapse">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-3 py-2 text-left">Name</th>
+          <th class="px-3 py-2 text-left">Employee ID</th>
+          <th class="px-3 py-2 text-left">Status</th>
+          <th class="px-3 py-2 text-center">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y">
+      {% for u in admins %}
+        <tr>
+          <td class="px-3 py-2">{{ u.name }}</td>
+          <td class="px-3 py-2">{{ u.employee_id }}</td>
+          <td class="px-3 py-2">
+            {% if u.is_active %}
+              <span class="text-green-600 font-semibold">Active</span>
+            {% else %}
+              <span class="text-red-600 font-semibold">Disabled</span>
+            {% endif %}
+          </td>
+
+          <td class="px-3 py-2 text-center space-x-2">
+
+              {% if u.id == current_user.id %}
+                <span class="text-gray-400 text-sm">Use Profile</span>
+              {% else %}
+
+              <!-- Edit -->
+              <button onclick="openEditModal(
+                {{ u.id }},
+                '{{ u.name }}',
+                '{{ u.employee_id }}',
+                '{{ u.role }}'
+              )"
+              class="text-indigo-600">
+                Edit
+              </button>
+
+              <!-- Reset password (NOT self) -->
+              <button onclick="openResetModal({{ u.id }})"
+                      class="text-blue-600">
+                Reset Password
+              </button>
+
+              <!-- Disable / Enable -->
+              {% if u.is_active %}
+                <form method="post" action="/users/disable"
+                      class="inline"
+                      onsubmit="return confirm('Disable this admin?');">
+                  <input type="hidden" name="user_id" value="{{ u.id }}">
+                  <button class="text-red-600">Disable</button>
+                </form>
+              {% else %}
+                <form method="post" action="/users/enable"
+                      class="inline"
+                      onsubmit="return confirm('Enable this admin?');">
+                  <input type="hidden" name="user_id" value="{{ u.id }}">
+                  <button class="text-green-600">Enable</button>
+                </form>
+              {% endif %}
+            {% endif %}
+
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="4" class="text-center py-4 text-gray-500">
+            No admin accounts found
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
+
+  <!-- ================= USER ACCOUNTS ================= -->
+  <div class="bg-white rounded shadow p-4">
+
+    <h3 class="text-lg font-semibold mb-3">User Accounts</h3>
+
+    <table class="min-w-full text-sm border-collapse">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-3 py-2 text-left">Name</th>
+          <th class="px-3 py-2 text-left">Employee ID</th>
+          <th class="px-3 py-2 text-left">Status</th>
+          <th class="px-3 py-2 text-center">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y">
+      {% for u in normal_users %}
+        <tr>
+          <td class="px-3 py-2">{{ u.name }}</td>
+          <td class="px-3 py-2">{{ u.employee_id }}</td>
+          <td class="px-3 py-2">
+            {% if u.is_active %}
+              <span class="text-green-600 font-semibold">Active</span>
+            {% else %}
+              <span class="text-red-600 font-semibold">Disabled</span>
+            {% endif %}
+          </td>
+
+          <td class="px-3 py-2 text-center space-x-2">
+
+            <!-- Edit -->
+            <button onclick="openEditModal(
+              {{ u.id }},
+              '{{ u.name }}',
+              '{{ u.employee_id }}',
+              '{{ u.role }}'
+            )"
+            class="text-indigo-600">
+              Edit
+            </button>
+
+            <!-- Reset password -->
+            <button onclick="openResetModal({{ u.id }})"
+                    class="text-blue-600">
+              Reset Password
+            </button>
+
+            <!-- Disable / Enable -->
+            {% if u.is_active %}
+              <form method="post" action="/users/disable"
+                    class="inline"
+                    onsubmit="return confirm('Disable this user?');">
+                <input type="hidden" name="user_id" value="{{ u.id }}">
+                <button class="text-red-600">Disable</button>
+              </form>
+            {% else %}
+              <form method="post" action="/users/enable"
+                    class="inline"
+                    onsubmit="return confirm('Enable this user?');">
+                <input type="hidden" name="user_id" value="{{ u.id }}">
+                <button class="text-green-600">Enable</button>
+              </form>
+            {% endif %}
+
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="4" class="text-center py-4 text-gray-500">
+            No user accounts found
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
+
+</div>
+
+<!-- ================= ADD USER MODAL ================= -->
+<div id="addUserModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+  <div class="bg-white rounded-lg w-full max-w-md p-6">
+
+    <h3 class="text-xl font-semibold mb-4">Add New User</h3>
+
+    <form method="post" action="/users/create">
+      <div class="mb-3">
+        <label class="block text-sm mb-1">Name</label>
+        <input class="w-full border rounded px-3 py-2" name="name" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="block text-sm mb-1">Employee ID</label>
+        <input class="w-full border rounded px-3 py-2" name="employee_id" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="block text-sm mb-1">Role</label>
+        <select name="role"
+                required
+                class="w-full border rounded px-3 py-2">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm mb-1">Password</label>
+        <input type="password" class="w-full border rounded px-3 py-2" name="password" required>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button type="button"
+                onclick="closeAddUserModal()"
+                class="px-4 py-2 border rounded">
+          Cancel
+        </button>
+        <button type="submit"
+                class="bg-blue-600 text-white px-4 py-2 rounded">
+          Save
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<!-- ================= RESET PASSWORD MODAL ================= -->
+<div id="resetModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+  <div class="bg-white rounded-lg w-full max-w-md p-6">
+
+    <h3 class="text-xl font-semibold mb-4">Reset Password</h3>
+
+    <form method="post" action="/users/reset-password">
+      <input type="hidden" name="user_id" id="resetUserId">
+      <div class="mb-4">
+        <label class="block text-sm mb-1">New Password</label>
+        <input type="password"
+          name="new_password"
+          required
+          class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button type="button"
+                onclick="closeResetModal()"
+                class="px-4 py-2 border rounded">
+          Cancel
+        </button>
+        <button type="submit"
+                class="bg-blue-600 text-white px-4 py-2 rounded">
+          Reset
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<!-- ================= EDIT USER MODAL ================= -->
+<div id="editUserModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+  <div class="bg-white rounded-lg w-full max-w-md p-6">
+
+    <h3 class="text-xl font-semibold mb-4">Edit User</h3>
+
+    <form method="post" action="/users/edit">
+
+      <input type="hidden" name="user_id" id="editUserId">
+
+      <div class="mb-3">
+        <label class="block text-sm mb-1">Name</label>
+        <input name="name"
+               id="editName"
+               required
+               class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div class="mb-3">
+        <label class="block text-sm mb-1">Employee ID</label>
+        <input name="employee_id"
+               id="editEmployeeId"
+               required
+               class="w-full border rounded px-3 py-2">
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm mb-1">Role</label>
+        <select name="role"
+                id="editRole"
+                class="w-full border rounded px-3 py-2">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button type="button"
+                onclick="closeEditModal()"
+                class="px-4 py-2 border rounded">
+          Cancel
+        </button>
+        <button type="submit"
+                class="bg-blue-600 text-white px-4 py-2 rounded">
+          Save Changes
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+
+<!-- ================= SCRIPT ================= -->
+<script>
+function openAddUserModal() {
+  document.getElementById("addUserModal").classList.remove("hidden");
+  document.getElementById("addUserModal").classList.add("flex");
+}
+
+function closeAddUserModal() {
+  document.getElementById("addUserModal").classList.add("hidden");
+  document.getElementById("addUserModal").classList.remove("flex");
+}
+
+function closeResetModal() {
+  document.getElementById("resetModal").classList.add("hidden");
+  document.getElementById("resetModal").classList.remove("flex");
+}
+
+let resetUserId = null;
+
+function openResetModal(userId) {
+  resetUserId = userId;
+  document.getElementById("resetUserId").value = userId;
+
+  document.getElementById("resetModal").classList.remove("hidden");
+  document.getElementById("resetModal").classList.add("flex");
+}
+
+function openEditModal(id, name, employeeId, role) {
+  document.getElementById("editUserId").value = id;
+  document.getElementById("editName").value = name;
+  document.getElementById("editEmployeeId").value = employeeId;
+  document.getElementById("editRole").value = role;
+
+  document.getElementById("editUserModal").classList.remove("hidden");
+  document.getElementById("editUserModal").classList.add("flex");
+}
+
+function closeEditModal() {
+  document.getElementById("editUserModal").classList.add("hidden");
+  document.getElementById("editUserModal").classList.remove("flex");
+}
+
+
+</script>
+
+{% endblock %}

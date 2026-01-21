@@ -1,0 +1,114 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block page_title %}Edit Component{% endblock %}
+
+{% block content %}
+
+<div class="max-w-3xl bg-white rounded shadow p-6">
+
+  <h3 class="text-xl font-semibold mb-4">Edit Component</h3>
+
+  <form method="post"
+        action="/stock/edit/{{ component.id }}"
+        enctype="multipart/form-data"
+        class="space-y-4">
+
+    <div>
+      <label class="block text-sm mb-1">Category</label>
+      <input name="category"
+             value="{{ component.category }}"
+             class="w-full border rounded px-3 py-2 mb-3">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Description</label>
+      <input name="description"
+             value="{{ component.description }}"
+             class="w-full border rounded px-3 py-2 mb-3">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Value</label>
+      <input name="value"
+             value="{{ component.value }}"
+             class="w-full border rounded px-3 py-2 mb-3">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Size</label>
+      <input name="size"
+             value="{{ component.size }}"
+             class="w-full border rounded px-3 py-2 mb-3">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Voltage</label>
+      <input name="voltage"
+             value="{{ component.voltage }}"
+             class="w-full border rounded px-3 py-2 mb-3">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Watt</label>
+      <input name="watt"
+             value="{{ component.watt }}"
+             class="w-full border rounded px-3 py-2 mb-3">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Type</label>
+      <input name="type"
+             value="{{ component.type }}"
+             class="w-full border rounded px-3 py-2 mb-3">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Part No</label>
+      <input name="part_no"
+             value="{{ component.part_no }}"
+             class="w-full border rounded px-3 py-2 mb-3">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Rack</label>
+      <input name="rack"
+             value="{{ component.rack }}"
+             class="w-full border rounded px-3 py-2 mb-3">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Location</label>
+      <input name="location"
+             value="{{ component.location }}"
+             class="w-full border rounded px-3 py-2 mb-3">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Quantity</label>
+      <input type="number"
+             name="quantity"
+             value="{{ component.quantity }}"
+             class="w-full border rounded px-3 py-2 mb-3">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Replace Image (required)</label>
+      <input type="file" name="image">
+    </div>
+
+    <div class="flex justify-end gap-2 pt-4">
+      <a href="/stock"
+         class="px-4 py-2 border rounded">
+        Cancel
+      </a>
+      <button type="submit"
+              class="bg-blue-600 text-white px-4 py-2 rounded">
+        Save Changes
+      </button>
+    </div>
+
+  </form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block page_title %}Reports{% endblock %}
+
+{% block content %}
+
+<div class="max-w-xl bg-white rounded shadow p-6 space-y-6">
+
+  <div>
+    <h2 class="text-2xl font-semibold">Reports</h2>
+    <p class="text-sm text-gray-600">
+      Download system data directly from the database.
+    </p>
+  </div>
+
+  <!-- COMPONENT REPORT -->
+  <div class="flex items-center justify-between border rounded p-4">
+    <div>
+      <h3 class="font-semibold">Component Listing</h3>
+      <p class="text-sm text-gray-600">
+        Download current component stock.
+      </p>
+    </div>
+
+    <a href="/reports/components/excel"
+       class="bg-blue-600 text-white px-4 py-2 rounded">
+      Download Excel
+    </a>
+  </div>
+
+  <!-- TRANSACTION REPORT -->
+  <div class="flex items-center justify-between border rounded p-4">
+    <div>
+      <h3 class="font-semibold">Borrow & Return Transactions</h3>
+      <p class="text-sm text-gray-600">
+        Download borrow and return history.
+      </p>
+    </div>
+
+    <a href="/reports/transactions/excel"
+       class="bg-blue-600 text-white px-4 py-2 rounded">
+      Download Excel
+    </a>
+  </div>
+
+</div>
+
+{% endblock %}

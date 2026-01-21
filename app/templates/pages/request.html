@@ -1,0 +1,394 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Request Component{% endblock %}
+{% block page_title %}Request Component{% endblock %}
+
+{% block content %}
+
+<div class="flex gap-4 h-[calc(100vh-120px)]">
+
+  <!-- LEFT PANEL (20%) -->
+  <div class="w-1/5 bg-white rounded shadow p-4 flex flex-col">
+
+    <h3 class="text-lg font-semibold mb-4">
+      Request Panel
+    </h3>
+
+    <!-- Component Image -->
+    <div class="mb-4">
+      <img id="componentImage"
+          src=""
+          alt=""
+          class="w-full h-40 object-contain bg-gray-100 rounded hidden">
+      <div id="imagePlaceholder"
+          class="w-full h-40 bg-gray-100 flex items-center justify-center rounded text-gray-400 text-sm">
+        No component selected
+      </div>
+    </div>
+
+    <!-- Component Details -->
+    <div class="text-sm space-y-2 flex-1">
+      <div><strong>Value:</strong> <span id="detailValue">-</span></div>
+      <div><strong>Size:</strong> <span id="detailSize">-</span></div>
+      <div><strong>Voltage:</strong> <span id="detailVoltage">-</span></div>
+      <div><strong>Watt:</strong> <span id="detailWatt">-</span></div>
+      <div><strong>Part No:</strong> <span id="detailPartNo">-</span></div>
+      <div><strong>Available Qty:</strong> <span id="detailQty">-</span></div>
+    </div>
+
+    <!-- Request Button -->
+    <button id="requestBtn"
+            type="button"
+            onclick="openRequestModal()"
+            disabled
+            class="mt-4 bg-blue-600 text-white py-2 rounded opacity-50 cursor-not-allowed">
+      Request Component
+    </button>
+
+
+  </div>
+
+
+  <!-- RIGHT PANEL (80%) -->
+  <div class="w-4/5 bg-white rounded shadow p-4 flex flex-col">
+
+    <h3 class="text-lg font-semibold mb-4">
+      Component List
+    </h3>
+
+    <!-- FILTER ROW -->
+    <form method="get" action="/request"
+      class="grid grid-cols-6 gap-2 mb-3 text-xs">
+
+      <input type="hidden" name="page" value="1">
+      
+      <input name="category"
+            value="{{ filters.category }}"
+            placeholder="Category"
+            class="border rounded px-2 py-1">
+
+      <input name="description"
+            value="{{ filters.description }}"
+            placeholder="Description"
+            class="border rounded px-2 py-1 col-span-2">
+
+      <input name="part_no"
+            value="{{ filters.part_no }}"
+            placeholder="Part No"
+            class="border rounded px-2 py-1">
+
+      <input name="rack"
+            value="{{ filters.rack }}"
+            placeholder="Rack"
+            class="border rounded px-2 py-1">
+
+      <button class="bg-blue-600 text-white rounded px-3 py-1">
+        Filter
+      </button>
+
+    </form>
+
+    <!-- TABLE -->
+    <div id="componentTableArea" class="overflow-auto flex-1" >
+      <table class="min-w-full text-xs border-collapse">
+        <thead class="bg-gray-100 sticky top-0">
+          <tr>
+            <th class="px-3 py-2 text-left">Image</th>
+            <th class="px-3 py-2 text-left">Category</th>
+            <th class="px-3 py-2 text-left">Description</th>
+            <th class="px-3 py-2 text-left">Part No</th>
+            <th class="px-3 py-2 text-left">Rack</th>
+            <th class="px-3 py-2 text-left">Location</th>
+            <th class="px-3 py-2 text-center">Available</th>
+          </tr>
+        </thead>
+
+
+        <tbody class="divide-y">
+          {% for c in components %}
+          <tr class="hover:bg-gray-50 cursor-pointer component-row"
+              data-id="{{ c.id }}"
+              data-value="{{ c.value }}"
+              data-size="{{ c.size }}"
+              data-voltage="{{ c.voltage }}"
+              data-watt="{{ c.watt }}"
+              data-partno="{{ c.part_no }}"
+              data-rack="{{ c.rack }}"
+              data-location="{{ c.location }}"
+              data-qty="{{ c.quantity }}"
+              data-image="{{ url_for('static', path=c.image_path) if c.image_path else '' }}">
+
+            <td class="px-3 py-2">
+              {% if c.image_path %}
+                <img src="{{ url_for('static', path=c.image_path) }}"
+                    class="w-12 h-12 object-contain rounded">
+              {% else %}
+                <div class="w-12 h-12 bg-gray-200 rounded"></div>
+              {% endif %}
+            </td>
+
+            <td class="px-3 py-2">{{ c.category }}</td>
+            <td class="px-3 py-2">{{ c.description }}</td>
+            <td class="px-3 py-2">{{ c.part_no }}</td>
+            <td class="px-3 py-2">{{ c.rack }}</td>
+            <td class="px-3 py-2">{{ c.location }}</td>
+            <td class="px-3 py-2 text-center font-semibold">{{ c.quantity }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" class="text-center py-4 text-gray-500">
+              No components found
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+
+
+      </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="flex justify-end gap-2 mt-3 text-sm">
+
+      {% if page > 1 %}
+      <a href="/request?page={{ page - 1 }}">Prev</a>
+      {% endif %}
+
+      Page {{ page }} / {{ total_pages }}
+
+      {% if page < total_pages %}
+      <a href="/request?page={{ page + 1 }}">Next</a>
+      {% endif %}
+
+    </div>
+
+    
+  </div>
+
+</div>
+
+<!-- REQUEST MODAL -->
+<div id="requestModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+  <div class="bg-white rounded-lg w-full max-w-lg p-6 relative">
+
+    <h3 class="text-xl font-semibold mb-4">
+      Request Component
+    </h3>
+
+    <form method="post" action="/request/create">
+
+      <input type="hidden" name="component_id" id="m_component_id">
+
+      <!-- Component Info (Read-only) -->
+      <div class="mb-3 text-sm space-y-1">
+        <div><strong>Category:</strong> <span id="m_category">-</span></div>
+        <div><strong>Description:</strong> <span id="m_description">-</span></div>
+        <div><strong>Part No:</strong> <span id="m_partno">-</span></div>
+        <div><strong>Available Qty:</strong> <span id="m_available">-</span></div>
+      </div>
+
+      <hr class="my-3">
+
+      <!-- Requested By -->
+      <div class="mb-3">
+        <label class="block text-sm mb-1">Requested By</label>
+        <input type="text"
+               value="{{ current_user.name }}"
+               class="w-full border rounded px-3 py-2 bg-gray-100"
+               readonly>
+      </div>
+
+      <!-- Quantity -->
+      <div class="mb-4">
+        <label class="block text-sm mb-1">Quantity to Borrow</label>
+        <input type="number"
+              name="quantity"
+              min="1"
+              id="m_qty"
+              class="w-full border rounded px-3 py-2"
+              placeholder="Enter quantity"
+              required>
+        <p id="qtyError" class="text-red-600 text-sm mt-1 hidden">
+          Requested quantity exceeds available stock.
+        </p>
+      </div>
+
+      <!-- Remarks -->
+      <div class="mb-4">
+        <label class="block text-sm mb-1">
+          Remarks / Reason
+        </label>
+
+        <textarea name="remarks"
+                  rows="3"
+                  placeholder="Enter reason for requesting this component..."
+                  class="w-full border rounded px-3 py-2 resize-none"></textarea>
+      </div>
+
+      
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-2">
+        <button type="button"
+                onclick="closeRequestModal()"
+                class="px-4 py-2 border rounded">
+          Cancel
+        </button>
+        <button type="submit"
+                id="submitRequestBtn"
+                class="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled>
+          Submit Request
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+
+<script>
+let selectedRow = null;
+
+const rows = document.querySelectorAll(".component-row");
+const tableArea = document.getElementById("componentTableArea");
+
+const detailValue = document.getElementById("detailValue");
+const detailSize = document.getElementById("detailSize");
+const detailVoltage = document.getElementById("detailVoltage");
+const detailWatt = document.getElementById("detailWatt");
+const detailPartNo = document.getElementById("detailPartNo");
+const detailQty = document.getElementById("detailQty");
+
+const img = document.getElementById("componentImage");
+const placeholder = document.getElementById("imagePlaceholder");
+const requestBtn = document.getElementById("requestBtn");
+
+/* ---------- helper functions ---------- */
+
+function clearSelection() {
+  rows.forEach(r => r.classList.remove("bg-blue-50"));
+
+  detailValue.innerText = "-";
+  detailSize.innerText = "-";
+  detailVoltage.innerText = "-";
+  detailWatt.innerText = "-";
+  detailPartNo.innerText = "-";
+  detailQty.innerText = "-";
+
+  img.classList.add("hidden");
+  placeholder.classList.remove("hidden");
+
+  requestBtn.disabled = true;
+  requestBtn.classList.add("opacity-50", "cursor-not-allowed");
+}
+
+/* ---------- row click ---------- */
+
+rows.forEach(row => {
+  row.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    selectedRow = row;
+
+    rows.forEach(r => r.classList.remove("bg-blue-50"));
+    row.classList.add("bg-blue-50");
+
+    detailValue.innerText = row.dataset.value;
+    detailSize.innerText = row.dataset.size;
+    detailVoltage.innerText = row.dataset.voltage;
+    detailWatt.innerText = row.dataset.watt;
+    detailPartNo.innerText = row.dataset.partno;
+    detailQty.innerText = row.dataset.qty;
+
+    requestBtn.disabled = false;
+    requestBtn.classList.remove("opacity-50", "cursor-not-allowed");
+  });
+});
+
+
+/* ---------- click outside table ---------- */
+
+document.addEventListener("click", (e) => {
+  const modal = document.getElementById("requestModal");
+
+  if (
+    !tableArea.contains(e.target) &&
+    !requestBtn.contains(e.target) &&
+    !modal.contains(e.target)
+  ) {
+    clearSelection();
+  }
+});
+
+</script>
+
+<script>
+
+function openRequestModal() {
+  if (!selectedRow) return;
+
+  availableQty = parseInt(selectedRow.dataset.qty) || 0;
+
+  document.getElementById("m_category").innerText =
+    selectedRow.children[1].innerText;
+
+  document.getElementById("m_description").innerText =
+    selectedRow.children[2].innerText;
+
+  document.getElementById("m_partno").innerText =
+    selectedRow.dataset.partno;
+
+  document.getElementById("m_available").innerText =
+    availableQty;
+
+  document.getElementById("m_component_id").value =
+    selectedRow.dataset.id;
+
+  qtyInput.value = "";
+  submitBtn.disabled = true;
+  qtyError.classList.add("hidden");
+
+  const modal = document.getElementById("requestModal");
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+}
+
+
+
+function closeRequestModal() {
+  const modal = document.getElementById("requestModal");
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+</script>
+
+<script>
+const qtyInput = document.getElementById("m_qty");
+const qtyError = document.getElementById("qtyError");
+const submitBtn = document.getElementById("submitRequestBtn");
+
+let availableQty = 0;
+
+/* ---------- validate quantity ---------- */
+function validateQty() {
+  const requested = parseInt(qtyInput.value || 0);
+
+  if (requested <= 0 || requested > availableQty) {
+    qtyError.classList.remove("hidden");
+    submitBtn.disabled = true;
+  } else {
+    qtyError.classList.add("hidden");
+    submitBtn.disabled = false;
+  }
+}
+
+qtyInput.addEventListener("input", validateQty);
+</script>
+
+
+{% endblock %}

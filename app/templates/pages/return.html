@@ -1,0 +1,314 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Return Component{% endblock %}
+{% block page_title %}Return Component{% endblock %}
+
+{% block content %}
+
+<div class="flex gap-4">
+
+  <!-- ================= LEFT PANEL (20%) ================= -->
+  <div class="w-1/5 bg-white rounded shadow p-4 flex flex-col">
+
+    <h3 class="text-lg font-semibold mb-4">
+      Return Panel
+    </h3>
+
+    <!-- Component Image -->
+    <div class="mb-4">
+      <img id="returnImage"
+           src=""
+           class="w-full h-40 object-contain bg-gray-100 rounded hidden">
+      <div id="returnImagePlaceholder"
+           class="w-full h-40 bg-gray-100 flex items-center justify-center rounded text-gray-400 text-sm">
+        No component selected
+      </div>
+    </div>
+
+    <!-- Component Details -->
+    <div class="text-sm space-y-2 flex-1">
+      <div><strong>Category:</strong> <span id="r_category">-</span></div>
+      <div><strong>Description:</strong> <span id="r_description">-</span></div>
+      <div><strong>Part No:</strong> <span id="r_partno">-</span></div>
+      <div><strong>Borrowed Qty:</strong> <span id="r_qty">-</span></div>
+      <div><strong>Remark:</strong> <span id="r_remark">-</span></div>
+      <div><strong>Borrowed By:</strong> <span id="r_user">-</span></div>
+      <div><strong>Borrowed Date:</strong> <span id="r_date">-</span></div>
+    </div>
+
+    <!-- Return Button -->
+    <button id="returnBtn"
+            type="button"
+            onclick="openReturnModal()"
+            disabled
+            class="mt-4 bg-blue-600 text-white py-2 rounded opacity-50 cursor-not-allowed">
+      Return Component
+    </button>
+
+  </div>
+
+  <!-- ================= RIGHT PANEL (80%) ================= -->
+  <div class="w-4/5 bg-white rounded shadow p-4">
+
+    <h3 class="text-lg font-semibold mb-4">
+      Active Borrowed Components
+    </h3>
+
+    <!-- TABLE -->
+    <div id="borrowTableArea">
+      <table class="min-w-full text-xs border-collapse">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-3 py-2 text-left">Image</th>
+            <th class="px-3 py-2 text-left">Component</th>
+            <th class="px-3 py-2 text-left">Part No</th>
+            <th class="px-3 py-2 text-center">Qty</th>
+            <th class="px-3 py-2 text-center">Remark</th>
+            <th class="px-3 py-2 text-left">Borrowed By</th>
+            <th class="px-3 py-2 text-left">Borrowed At</th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y">
+
+        {% for r, c, u in borrowed_items %}
+        <tr class="borrow-row hover:bg-gray-50 cursor-pointer"
+            data-id="{{ r.id }}"
+            data-owner-id="{{ r.user_id }}"
+            data-category="{{ c.category }}"
+            data-description="{{ c.description }}"
+            data-partno="{{ c.part_no }}"
+            data-qty="{{ r.quantity }}"
+            data-remark="{{ r.remarks }}"
+            data-user="{{ u.name }}"
+            data-date="{{ r.requested_at.strftime('%Y-%m-%d') }}"
+            data-image="{{ url_for('static', path=c.image_path) if c.image_path else '' }}">
+
+        <td class="px-3 py-2">
+        {% if c.image_path %}
+            <img src="{{ url_for('static', path=c.image_path) }}"
+                class="w-12 h-12 object-contain rounded border bg-white"
+                alt="{{ c.part_no }}">
+        {% else %}
+            <div class="w-12 h-12 flex items-center justify-center
+                        bg-gray-100 text-gray-400 text-xs rounded border">
+            No Image
+            </div>
+        {% endif %}
+        </td>
+
+
+        <td class="px-3 py-2">{{ c.description }}</td>
+        <td class="px-3 py-2">{{ c.part_no }}</td>
+        <td class="px-3 py-2">{{ r.quantity }}</td>
+        <td class="px-3 py-2">{{ r.remarks }}</td>
+        <td class="px-3 py-2">{{ u.name }}</td>
+        <td class="px-3 py-2">{{ r.requested_at.strftime('%Y-%m-%d') }}</td>
+        </tr>
+
+        {% else %}
+        <tr>
+        <td colspan="6" class="text-center py-4 text-gray-500">
+            No components are currently borrowed
+        </td>
+
+        
+        </tr>
+        {% endfor %}
+
+        </tbody>
+
+      </table>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================= RETURN MODAL ================= -->
+<div id="returnModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+  <div class="bg-white rounded-lg w-full max-w-md p-6">
+
+    <h3 class="text-xl font-semibold mb-4">
+      Return Component
+    </h3>
+
+    <form method="post" action="/return/confirm">
+        <input type="hidden" name="request_id" id="m_request_id">
+
+      <div class="text-sm space-y-1 mb-4">
+        <div><strong>Component:</strong> <span id="m_r_desc">-</span></div>
+        <div><strong>Part No:</strong> <span id="m_r_partno">-</span></div>
+        <div><strong>Borrowed Qty:</strong> <span id="m_r_qty">-</span></div>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm mb-1">Return Quantity</label>
+        <input type="number"
+            name="return_qty"
+            id="m_return_qty"
+            min="1"
+            class="w-full border rounded px-3 py-2"
+            placeholder="Enter quantity"
+            required>
+        <p id="returnQtyError"
+            class="text-red-600 text-sm mt-1 hidden">
+            Return quantity cannot exceed borrowed quantity.
+        </p>
+
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button type="button"
+                onclick="closeReturnModal()"
+                class="px-4 py-2 border rounded">
+          Cancel
+        </button>
+        <button type="submit"
+                id="confirmReturnBtn"
+                class="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
+                disabled>
+            Confirm Return
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+const rows = document.querySelectorAll(".borrow-row");
+const returnBtn = document.getElementById("returnBtn");
+
+function clearReturnSelection() {
+  rows.forEach(r => r.classList.remove("bg-blue-50"));
+
+  document.getElementById("r_category").innerText = "-";
+  document.getElementById("r_description").innerText = "-";
+  document.getElementById("r_partno").innerText = "-";
+  document.getElementById("r_qty").innerText = "-";
+  document.getElementById("r_user").innerText = "-";
+  document.getElementById("r_date").innerText = "-";
+
+  const img = document.getElementById("returnImage");
+  const placeholder = document.getElementById("returnImagePlaceholder");
+
+  img.classList.add("hidden");
+  placeholder.classList.remove("hidden");
+
+  returnBtn.disabled = true;
+  returnBtn.classList.add("opacity-50", "cursor-not-allowed");
+}
+
+
+rows.forEach(row => {
+  row.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    rows.forEach(r => r.classList.remove("bg-blue-50"));
+    row.classList.add("bg-blue-50");
+
+    document.getElementById("r_category").innerText = row.dataset.category;
+    document.getElementById("r_description").innerText = row.dataset.description;
+    document.getElementById("r_partno").innerText = row.dataset.partno;
+    document.getElementById("r_qty").innerText = row.dataset.qty;
+    document.getElementById("r_remark").innerText = row.dataset.remark;
+    document.getElementById("r_user").innerText = row.dataset.user;
+    document.getElementById("r_date").innerText = row.dataset.date;
+
+    const ownerId = row.dataset.ownerId;
+    const currentUserId = "{{ current_user.id }}";
+    const isAdmin = "{{ current_user.role }}" === "admin";
+
+    if (isAdmin || ownerId === currentUserId) {
+      returnBtn.disabled = false;
+      returnBtn.classList.remove("opacity-50", "cursor-not-allowed");
+      returnBtn.innerText = "Return Component";
+    } else {
+      returnBtn.disabled = true;
+      returnBtn.classList.add("opacity-50", "cursor-not-allowed");
+      returnBtn.innerText = "Admin Only";
+    }
+  
+    // 🔴 THIS WAS MISSING — IMAGE HANDLING
+    const img = document.getElementById("returnImage");
+    const placeholder = document.getElementById("returnImagePlaceholder");
+
+    if (row.dataset.image) {
+      img.src = row.dataset.image;
+      img.classList.remove("hidden");
+      placeholder.classList.add("hidden");
+    } else {
+      img.classList.add("hidden");
+      placeholder.classList.remove("hidden");
+    }
+
+    // returnBtn.disabled = false;
+    // returnBtn.classList.remove("opacity-50", "cursor-not-allowed");
+  });
+});
+
+
+document.addEventListener("click", () => {
+  clearReturnSelection();
+});
+
+function openReturnModal() {
+  borrowedQty = parseInt(document.getElementById("r_qty").innerText);
+
+  document.getElementById("m_r_desc").innerText =
+    document.getElementById("r_description").innerText;
+
+  document.getElementById("m_r_partno").innerText =
+    document.getElementById("r_partno").innerText;
+
+  document.getElementById("m_r_qty").innerText = borrowedQty;
+
+  document.getElementById("m_request_id").value =
+    document.querySelector(".borrow-row.bg-blue-50").dataset.id;
+
+  returnQtyInput.value = "";
+  confirmReturnBtn.disabled = true;
+  returnQtyError.classList.add("hidden");
+
+  document.getElementById("returnModal").classList.remove("hidden");
+  document.getElementById("returnModal").classList.add("flex");
+}
+
+
+
+function closeReturnModal() {
+  document.getElementById("returnModal").classList.add("hidden");
+  document.getElementById("returnModal").classList.remove("flex");
+}
+</script>
+
+<script>
+const returnQtyInput = document.getElementById("m_return_qty");
+const returnQtyError = document.getElementById("returnQtyError");
+const confirmReturnBtn = document.getElementById("confirmReturnBtn");
+
+let borrowedQty = 0;
+
+function validateReturnQty() {
+  const val = parseInt(returnQtyInput.value || 0);
+
+  if (val <= 0 || val > borrowedQty) {
+    returnQtyError.classList.remove("hidden");
+    confirmReturnBtn.disabled = true;
+  } else {
+    returnQtyError.classList.add("hidden");
+    confirmReturnBtn.disabled = false;
+  }
+}
+
+returnQtyInput.addEventListener("input", validateReturnQty);
+</script>
+
+
+{% endblock %}

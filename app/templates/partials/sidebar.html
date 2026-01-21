@@ -1,0 +1,97 @@
+<div class="w-14 bg-blue-600 text-white flex flex-col">
+
+  <nav class="flex-1 pt-4 space-y-1">
+
+    <!-- ===== Inventory Flow ===== -->
+    <div class="pb-2 mb-2 border-b border-blue-400/30">
+      
+      <a class="block py-4"></a>
+
+      <a href="/request"
+         title="Request Component"
+         class="block px-4 py-3 rounded text-center
+         {% if request.url.path == '/request' %}
+           bg-blue-800
+         {% else %}
+           hover:bg-blue-700
+         {% endif %}">
+        <span class="material-icons-round transition transform hover:scale-110">
+          inventory_2
+        </span>
+      </a>
+
+      <a href="/return"
+         title="Return Component"
+         class="block px-4 py-3 rounded text-center
+         {% if request.url.path == '/return' %}
+           bg-blue-800
+         {% else %}
+           hover:bg-blue-700
+         {% endif %}">
+        <span class="material-icons-round transition transform hover:scale-110">
+          assignment_return
+        </span>
+      </a>
+
+      <a href="/stock"
+         title="Stock Management"
+         class="block px-4 py-3 rounded text-center
+         {% if request.url.path == '/stock' %}
+           bg-blue-800
+         {% else %}
+           hover:bg-blue-700
+         {% endif %}">
+        <span class="material-icons-round transition transform hover:scale-110">
+          stacked_bar_chart
+        </span>
+      </a>
+
+    </div>
+
+    <!-- ===== Admin Tools ===== -->
+    {% if current_user.role == "admin" %}
+
+    <a href="/users"
+       title="User Management"
+       class="block px-4 py-3 rounded text-center
+       {% if request.url.path == '/users' %}
+         bg-blue-800
+       {% else %}
+         hover:bg-blue-700
+       {% endif %}">
+      <span class="material-icons-round transition transform hover:scale-110">
+        group
+      </span>
+    </a>
+
+    <a href="/profile"
+       title="Profile"
+       class="block px-4 py-3 rounded text-center
+       {% if request.url.path == '/profile' %}
+         bg-blue-800
+       {% else %}
+         hover:bg-blue-700
+       {% endif %}">
+      <span class="material-icons-round transition transform hover:scale-110">
+        settings
+      </span>
+    </a>
+
+    <a href="/reports"
+       title="Report"
+       class="block px-4 py-3 rounded text-center
+       {% if request.url.path == '/reports' %}
+         bg-blue-800
+       {% else %}
+         hover:bg-blue-700
+       {% endif %}">
+      <span class="material-icons-round transition transform hover:scale-110">
+        download
+      </span>
+    </a>
+
+    {% endif %}
+
+  </nav>
+
+</div>
