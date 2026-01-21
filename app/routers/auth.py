@@ -10,7 +10,10 @@ from app.models.user import User
 router = APIRouter()
 
 @router.get("/")
-def login_page(request: Request):
+def home(request: Request):
+    if request.session.get("user_id"):
+        return RedirectResponse("/request", status_code=302)
+
     return request.app.state.templates.TemplateResponse(
         "base.html",
         {"request": request}
